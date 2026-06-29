@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../services/export_service.dart';
+import '../services/import_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -22,6 +23,30 @@ class SettingsScreen extends ConsumerWidget {
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(content: Text(t.exportFailed(e.toString()))),
+      );
+    }
+  }
+
+  Future<void> _import(BuildContext context, WidgetRef ref) async {
+    final t = AppLocalizations.of(context)!;
+    final db = ref.read(dbProvider);
+    final svc = ImportService(db);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final result = await svc.pickAndImport();
+      if (result == null) return; // user cancelled
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(t.importSuccess(result.entryCount, result.sleepCount)),
+        ),
+      );
+    } on ImportFormatException {
+      messenger.showSnackBar(
+        SnackBar(content: Text(t.importUnsupported)),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(t.errorPrefix(e.toString()))),
       );
     }
   }
@@ -46,6 +71,17 @@ class SettingsScreen extends ConsumerWidget {
           title: Text(t.exportJson),
           subtitle: Text(t.exportJsonSub),
           onTap: () => _export(context, ref, false),
+        ),
+        const Divider(),
+        ListTile(
+          title: Text(t.importData),
+          dense: true,
+        ),
+        ListTile(
+          leading: const Icon(Icons.file_upload),
+          title: Text(t.importJson),
+          subtitle: Text(t.importJsonSub),
+          onTap: () => _import(context, ref),
         ),
         const Divider(),
         ListTile(

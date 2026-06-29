@@ -96,5 +96,11 @@
   "exportJsonSub": "Machine-readable",
   "exportSubjectCsv": "Tinnitus Protocol Export (CSV)",
   "exportSubjectJson": "Tinnitus Protocol Export (JSON)",
+  "importData": "Import data",
+  "importJson": "Import JSON",
+  "importJsonSub": "Restore from a previous export",
+  "importUnsupported": "This JSON format is not supported.",
+  "importSuccess": "Imported {entries} entries and {sleep} sleep logs.",
+  "@importSuccess": {"placeholders": {"entries": {"type": "int"}, "sleep": {"type": "int"}}},
   "aboutSubtitle": "Version 0.1.0 — Data is stored locally only."
 }
