@@ -24,6 +24,8 @@
   "customTriggerHint": "e.g. Wine, Cinema, Migraine…",
   "deleteCustomTriggerTitle": "Delete custom tag?",
   "deleteCustomTriggerConfirm": "The tag will be removed from all entries.",
+  "tagsCount": "Tags ({count})",
+  "@tagsCount": { "placeholders": { "count": { "type": "int" } } },
 
   "triggerImpact": "Trigger impact",
   "triggerImpactSubtitle": "Average loudness and distress with the tag set, compared to entries without it.",

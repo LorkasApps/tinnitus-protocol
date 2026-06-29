@@ -128,6 +128,16 @@ class _EntriesTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = AppLocalizations.of(context)!;
     final entriesAsync = ref.watch(entriesStreamProvider);
+    final triggers = ref.watch(triggersStreamProvider).value ?? const [];
+    final entryTriggers =
+        ref.watch(entryTriggersStreamProvider).value ?? const [];
+    final triggersById = {for (final tr in triggers) tr.id: tr};
+    final triggersByEntry = <int, List<Trigger>>{};
+    for (final link in entryTriggers) {
+      final tr = triggersById[link.triggerId];
+      if (tr == null) continue;
+      (triggersByEntry[link.entryId] ??= []).add(tr);
+    }
 
     return entriesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -164,6 +174,7 @@ class _EntriesTab extends ConsumerWidget {
             final entry = entries[i];
             return EntryTile(
               entry: entry,
+              triggers: triggersByEntry[entry.id] ?? const [],
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => EntryFormScreen(existing: entry),

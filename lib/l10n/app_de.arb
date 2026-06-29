@@ -24,6 +24,8 @@
   "customTriggerHint": "z. B. Wein, Kino, Migräne…",
   "deleteCustomTriggerTitle": "Eigenen Tag löschen?",
   "deleteCustomTriggerConfirm": "Der Tag wird aus allen Einträgen entfernt.",
+  "tagsCount": "Tags ({count})",
+  "@tagsCount": { "placeholders": { "count": { "type": "int" } } },
 
   "triggerImpact": "Trigger-Einfluss",
   "triggerImpactSubtitle": "Durchschnittliche Lautstärke und Belastung bei gesetztem Tag, verglichen mit Einträgen ohne.",

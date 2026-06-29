@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database.dart';
+import '../data/trigger_labels.dart';
 import '../l10n/app_localizations.dart';
 
 class EntryTile extends StatelessWidget {
   const EntryTile({
     super.key,
     required this.entry,
+    required this.triggers,
     required this.onTap,
     required this.onLongPress,
   });
 
   final Entry entry;
+  final List<Trigger> triggers;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
@@ -57,8 +60,56 @@ class EntryTile extends StatelessWidget {
                   style: theme.textTheme.bodyMedium,
                 ),
               ],
+              if (triggers.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                _TriggerSummary(triggers: triggers),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TriggerSummary extends StatelessWidget {
+  const _TriggerSummary({required this.triggers});
+  final List<Trigger> triggers;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+
+    if (triggers.length > 3) {
+      return _TagPill(label: t.tagsCount(triggers.length));
+    }
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final tr in triggers) _TagPill(label: triggerLabel(t, tr)),
+      ],
+    );
+  }
+}
+
+class _TagPill extends StatelessWidget {
+  const _TagPill({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onSecondaryContainer,
         ),
       ),
     );
