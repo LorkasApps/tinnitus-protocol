@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database.dart';
+import '../data/trigger_labels.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../widgets/scale_slider.dart';
@@ -22,6 +23,7 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
   late int _loudness;
   late int _distress;
   late TextEditingController _notesCtrl;
+  final Set<int> _selectedTriggerIds = {};
 
   @override
   void initState() {
@@ -31,12 +33,26 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
     _loudness = e?.loudness ?? 5;
     _distress = e?.distress ?? 5;
     _notesCtrl = TextEditingController(text: e?.notes ?? '');
+    if (e != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadTriggers(e.id));
+    }
   }
 
   @override
   void dispose() {
     _notesCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadTriggers(int entryId) async {
+    final db = ref.read(dbProvider);
+    final list = await db.getTriggersForEntry(entryId);
+    if (!mounted) return;
+    setState(() {
+      _selectedTriggerIds
+        ..clear()
+        ..addAll(list.map((t) => t.id));
+    });
   }
 
   Future<void> _pickDateTime() async {
@@ -63,14 +79,73 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
     });
   }
 
+  Future<void> _addCustomTrigger() async {
+    final t = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    final input = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.addCustomTriggerTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: t.customTriggerHint),
+          onSubmitted: (v) => Navigator.pop(ctx, v),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(t.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: Text(t.save),
+          ),
+        ],
+      ),
+    );
+    if (input == null || input.trim().isEmpty) return;
+    final db = ref.read(dbProvider);
+    final id = await db.insertCustomTrigger(input.trim());
+    if (!mounted) return;
+    setState(() => _selectedTriggerIds.add(id));
+  }
+
+  Future<void> _confirmDeleteCustomTrigger(Trigger trigger) async {
+    final t = AppLocalizations.of(context)!;
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.deleteCustomTriggerTitle),
+        content: Text(t.deleteCustomTriggerConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.cancel),
+          ),
+          FilledButton.tonal(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.delete),
+          ),
+        ],
+      ),
+    );
+    if (yes != true) return;
+    final db = ref.read(dbProvider);
+    await db.deleteCustomTrigger(trigger.id);
+    if (!mounted) return;
+    setState(() => _selectedTriggerIds.remove(trigger.id));
+  }
+
   Future<void> _save() async {
     final db = ref.read(dbProvider);
     final t = AppLocalizations.of(context)!;
     final notes = _notesCtrl.text.trim();
     final messenger = ScaffoldMessenger.of(context);
     try {
+      int entryId;
       if (widget.existing == null) {
-        await db.insertEntry(
+        entryId = await db.insertEntry(
           EntriesCompanion(
             timestamp: Value(_timestamp),
             loudness: Value(_loudness),
@@ -79,6 +154,7 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
           ),
         );
       } else {
+        entryId = widget.existing!.id;
         await db.updateEntry(
           widget.existing!.copyWith(
             timestamp: _timestamp,
@@ -88,6 +164,7 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
           ),
         );
       }
+      await db.setTriggersForEntry(entryId, _selectedTriggerIds);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       messenger.showSnackBar(
@@ -102,6 +179,7 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
     final isEdit = widget.existing != null;
     final loc = Localizations.localeOf(context).languageCode;
     final dateFmt = DateFormat.yMMMMEEEEd(loc).add_Hm();
+    final triggersAsync = ref.watch(triggersStreamProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -142,11 +220,31 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
             maxLabel: t.distressMax,
           ),
           const SizedBox(height: 16),
+          Text(t.triggers, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          triggersAsync.when(
+            loading: () => const LinearProgressIndicator(),
+            error: (e, _) => Text(t.errorPrefix(e.toString())),
+            data: (triggers) => _TriggerChips(
+              triggers: triggers,
+              selected: _selectedTriggerIds,
+              onToggle: (id, selected) => setState(() {
+                if (selected) {
+                  _selectedTriggerIds.add(id);
+                } else {
+                  _selectedTriggerIds.remove(id);
+                }
+              }),
+              onAddCustom: _addCustomTrigger,
+              onDeleteCustom: _confirmDeleteCustomTrigger,
+            ),
+          ),
+          const SizedBox(height: 16),
           TextField(
             controller: _notesCtrl,
             maxLines: 4,
             decoration: InputDecoration(
-              labelText: t.notesTrigger,
+              labelText: t.notesOptional,
               hintText: t.notesTriggerHint,
               border: const OutlineInputBorder(),
             ),
@@ -159,6 +257,48 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _TriggerChips extends StatelessWidget {
+  const _TriggerChips({
+    required this.triggers,
+    required this.selected,
+    required this.onToggle,
+    required this.onAddCustom,
+    required this.onDeleteCustom,
+  });
+
+  final List<Trigger> triggers;
+  final Set<int> selected;
+  final void Function(int id, bool selected) onToggle;
+  final VoidCallback onAddCustom;
+  final void Function(Trigger trigger) onDeleteCustom;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      children: [
+        for (final trig in triggers)
+          GestureDetector(
+            onLongPress:
+                trig.customLabel != null ? () => onDeleteCustom(trig) : null,
+            child: FilterChip(
+              label: Text(triggerLabel(t, trig)),
+              selected: selected.contains(trig.id),
+              onSelected: (sel) => onToggle(trig.id, sel),
+            ),
+          ),
+        ActionChip(
+          avatar: const Icon(Icons.add, size: 18),
+          label: Text(t.addCustomTrigger),
+          onPressed: onAddCustom,
+        ),
+      ],
     );
   }
 }

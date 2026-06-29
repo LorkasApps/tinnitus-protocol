@@ -5,6 +5,7 @@ import '../data/database.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../widgets/entry_tile.dart';
+import 'analyze_screen.dart';
 import 'entry_form_screen.dart';
 import 'settings_screen.dart';
 import 'sleep_form_screen.dart';
@@ -24,11 +25,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
-    final titles = [t.tabEntries, t.tabSleep, t.tabStats, t.tabSettings];
+    final titles = [
+      t.tabEntries,
+      t.tabSleep,
+      t.tabStats,
+      t.tabAnalyze,
+      t.tabSettings,
+    ];
     final bodies = <Widget>[
       const _EntriesTab(),
       const SleepScreen(),
       const StatsScreen(),
+      const AnalyzeScreen(),
       const SettingsScreen(),
     ];
 
@@ -70,6 +78,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           NavigationDestination(
             icon: const Icon(Icons.show_chart),
             label: t.tabStats,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.insights),
+            label: t.tabAnalyze,
           ),
           NavigationDestination(
             icon: const Icon(Icons.settings),

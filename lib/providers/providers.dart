@@ -15,3 +15,11 @@ final entriesStreamProvider = StreamProvider<List<Entry>>((ref) {
 final sleepLogsStreamProvider = StreamProvider<List<SleepLog>>((ref) {
   return ref.watch(dbProvider).watchAllSleepLogs();
 });
+
+final triggersStreamProvider = StreamProvider<List<Trigger>>((ref) {
+  return ref.watch(dbProvider).watchAllTriggers();
+});
+
+final entryTriggersStreamProvider = StreamProvider<List<EntryTrigger>>((ref) {
+  return ref.watch(dbProvider).watchAllEntryTriggers();
+});
