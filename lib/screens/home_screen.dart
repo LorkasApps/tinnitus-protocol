@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../widgets/entry_tile.dart';
 import 'entry_form_screen.dart';
@@ -22,7 +23,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final titles = ['Einträge', 'Schlaf', 'Statistik', 'Einstellungen'];
+    final t = AppLocalizations.of(context)!;
+    final titles = [t.tabEntries, t.tabSleep, t.tabStats, t.tabSettings];
     final bodies = <Widget>[
       const _EntriesTab(),
       const SleepScreen(),
@@ -37,7 +39,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           MaterialPageRoute<void>(builder: (_) => const EntryFormScreen()),
         ),
         icon: const Icon(Icons.add),
-        label: const Text('Neuer Eintrag'),
+        label: Text(t.newEntry),
       );
     } else if (_tab == 1) {
       fab = FloatingActionButton.extended(
@@ -45,7 +47,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           MaterialPageRoute<void>(builder: (_) => const SleepFormScreen()),
         ),
         icon: const Icon(Icons.bedtime),
-        label: const Text('Schlaf eintragen'),
+        label: Text(t.logSleep),
       );
     }
 
@@ -56,22 +58,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
         onDestinationSelected: (i) => setState(() => _tab = i),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.list_alt),
-            label: 'Einträge',
+            icon: const Icon(Icons.list_alt),
+            label: t.tabEntries,
           ),
           NavigationDestination(
-            icon: Icon(Icons.bedtime),
-            label: 'Schlaf',
+            icon: const Icon(Icons.bedtime),
+            label: t.tabSleep,
           ),
           NavigationDestination(
-            icon: Icon(Icons.show_chart),
-            label: 'Statistik',
+            icon: const Icon(Icons.show_chart),
+            label: t.tabStats,
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings),
-            label: 'Einstellungen',
+            icon: const Icon(Icons.settings),
+            label: t.tabSettings,
           ),
         ],
       ),
@@ -87,19 +89,20 @@ class _EntriesTab extends ConsumerWidget {
     WidgetRef ref,
     Entry entry,
   ) async {
+    final t = AppLocalizations.of(context)!;
     final yes = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Eintrag löschen?'),
-        content: const Text('Dieser Vorgang lässt sich nicht rückgängig machen.'),
+        title: Text(t.deleteEntryTitle),
+        content: Text(t.deleteConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(t.cancel),
           ),
           FilledButton.tonal(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Löschen'),
+            child: Text(t.delete),
           ),
         ],
       ),
@@ -111,11 +114,12 @@ class _EntriesTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context)!;
     final entriesAsync = ref.watch(entriesStreamProvider);
 
     return entriesAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Fehler: $e')),
+      error: (e, _) => Center(child: Text(t.errorPrefix(e.toString()))),
       data: (entries) {
         if (entries.isEmpty) {
           return Center(
@@ -131,14 +135,11 @@ class _EntriesTab extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Noch keine Einträge.',
+                    t.noEntries,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Tippe auf "Neuer Eintrag", um zu starten.',
-                    textAlign: TextAlign.center,
-                  ),
+                  Text(t.noEntriesHint, textAlign: TextAlign.center),
                 ],
               ),
             ),

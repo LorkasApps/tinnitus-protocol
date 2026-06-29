@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../widgets/scale_slider.dart';
 
@@ -64,6 +65,7 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
 
   Future<void> _save() async {
     final db = ref.read(dbProvider);
+    final t = AppLocalizations.of(context)!;
     final notes = _notesCtrl.text.trim();
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -89,23 +91,25 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Speichern fehlgeschlagen: $e')),
+        SnackBar(content: Text(t.saveFailed(e.toString()))),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final isEdit = widget.existing != null;
-    final dateFmt = DateFormat('EEEE, dd.MM.yyyy HH:mm', 'de_DE');
+    final loc = Localizations.localeOf(context).languageCode;
+    final dateFmt = DateFormat.yMMMMEEEEd(loc).add_Hm();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Eintrag bearbeiten' : 'Neuer Eintrag'),
+        title: Text(isEdit ? t.editEntry : t.newEntry),
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
-            tooltip: 'Speichern',
+            tooltip: t.save,
             onPressed: _save,
           ),
         ],
@@ -116,42 +120,42 @@ class _EntryFormScreenState extends ConsumerState<EntryFormScreen> {
           Card(
             child: ListTile(
               leading: const Icon(Icons.access_time),
-              title: const Text('Zeitpunkt'),
+              title: Text(t.timestamp),
               subtitle: Text(dateFmt.format(_timestamp)),
               onTap: _pickDateTime,
             ),
           ),
           const SizedBox(height: 16),
           ScaleSlider(
-            label: 'Lautstärke',
+            label: t.loudness,
             value: _loudness,
             onChanged: (v) => setState(() => _loudness = v),
-            minLabel: 'kaum hörbar',
-            maxLabel: 'sehr laut',
+            minLabel: t.loudnessMin,
+            maxLabel: t.loudnessMax,
           ),
           const SizedBox(height: 8),
           ScaleSlider(
-            label: 'Belastung',
+            label: t.distress,
             value: _distress,
             onChanged: (v) => setState(() => _distress = v),
-            minLabel: 'kaum',
-            maxLabel: 'extrem',
+            minLabel: t.distressMin,
+            maxLabel: t.distressMax,
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _notesCtrl,
             maxLines: 4,
-            decoration: const InputDecoration(
-              labelText: 'Notizen / Trigger',
-              hintText: 'Stress, Lärm, Essen, Medikamente …',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: t.notesTrigger,
+              hintText: t.notesTriggerHint,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: _save,
             icon: const Icon(Icons.save),
-            label: Text(isEdit ? 'Aktualisieren' : 'Speichern'),
+            label: Text(isEdit ? t.update : t.save),
           ),
         ],
       ),

@@ -4,16 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 
 enum TimePeriod { d7, d30, d90, all }
 
-extension on TimePeriod {
-  String get label => switch (this) {
-        TimePeriod.d7 => '7 T',
-        TimePeriod.d30 => '30 T',
-        TimePeriod.d90 => '90 T',
-        TimePeriod.all => 'Alle',
+extension TimePeriodX on TimePeriod {
+  String labelFor(AppLocalizations t) => switch (this) {
+        TimePeriod.d7 => t.period7d,
+        TimePeriod.d30 => t.period30d,
+        TimePeriod.d90 => t.period90d,
+        TimePeriod.all => t.periodAll,
       };
 
   Duration? get duration => switch (this) {
@@ -39,6 +40,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final entriesAsync = ref.watch(entriesStreamProvider);
     final sleepAsync = ref.watch(sleepLogsStreamProvider);
 
@@ -46,10 +48,10 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (entriesAsync.hasError) {
-      return Center(child: Text('Fehler: ${entriesAsync.error}'));
+      return Center(child: Text(t.errorPrefix(entriesAsync.error.toString())));
     }
     if (sleepAsync.hasError) {
-      return Center(child: Text('Fehler: ${sleepAsync.error}'));
+      return Center(child: Text(t.errorPrefix(sleepAsync.error.toString())));
     }
 
     final allEntries = entriesAsync.value ?? const <Entry>[];
@@ -59,16 +61,8 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
       return const _Empty();
     }
 
-    final entries = _filterByPeriod(
-      allEntries,
-      _period,
-      (e) => e.timestamp,
-    );
-    final sleep = _filterByPeriod(
-      allSleep,
-      _period,
-      (s) => s.date,
-    );
+    final entries = _filterByPeriod(allEntries, _period, (e) => e.timestamp);
+    final sleep = _filterByPeriod(allSleep, _period, (s) => s.date);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -81,13 +75,13 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
         ),
         const SizedBox(height: 16),
         if (entries.isEmpty)
-          const _FilteredEmpty(label: 'Keine Tinnitus-Einträge im Zeitraum.')
+          _FilteredEmpty(label: t.noTinnitusInPeriod)
         else ...[
           _TrendChartCard(entries: entries, aggregate: _aggregate),
           const SizedBox(height: 16),
         ],
         if (sleep.isEmpty)
-          const _FilteredEmpty(label: 'Keine Schlaf-Einträge im Zeitraum.')
+          _FilteredEmpty(label: t.noSleepInPeriod)
         else ...[
           _SleepChartCard(logs: sleep),
           const SizedBox(height: 16),
@@ -119,6 +113,7 @@ class _Empty extends StatelessWidget {
   const _Empty();
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return Center(
       child: Padding(
@@ -128,10 +123,10 @@ class _Empty extends StatelessWidget {
           children: [
             Icon(Icons.show_chart, size: 64, color: theme.colorScheme.onSurfaceVariant),
             const SizedBox(height: 12),
-            Text('Noch keine Einträge.', style: theme.textTheme.titleMedium),
+            Text(t.noEntriesEmptyState, style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
-              'Lege einen Tinnitus- oder Schlaf-Eintrag an, dann erscheint hier der Verlauf.',
+              t.addEntryHint,
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -173,16 +168,17 @@ class _Controls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Zeitraum', style: Theme.of(context).textTheme.labelLarge),
+        Text(t.period, style: Theme.of(context).textTheme.labelLarge),
         const SizedBox(height: 6),
         SizedBox(
           width: double.infinity,
           child: SegmentedButton<TimePeriod>(
             segments: TimePeriod.values
-                .map((p) => ButtonSegment(value: p, label: Text(p.label)))
+                .map((p) => ButtonSegment(value: p, label: Text(p.labelFor(t))))
                 .toList(),
             selected: {period},
             showSelectedIcon: false,
@@ -190,21 +186,21 @@ class _Controls extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Text('Tinnitus-Verlauf', style: Theme.of(context).textTheme.labelLarge),
+        Text(t.tinnitusTrend, style: Theme.of(context).textTheme.labelLarge),
         const SizedBox(height: 6),
         SizedBox(
           width: double.infinity,
           child: SegmentedButton<AggregateMode>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: AggregateMode.perEntry,
-                label: Text('Pro Eintrag'),
-                icon: Icon(Icons.scatter_plot),
+                label: Text(t.perEntry),
+                icon: const Icon(Icons.scatter_plot),
               ),
               ButtonSegment(
                 value: AggregateMode.perDay,
-                label: Text('Tagesdurchschnitt'),
-                icon: Icon(Icons.calendar_today),
+                label: Text(t.perDay),
+                icon: const Icon(Icons.calendar_today),
               ),
             ],
             selected: {aggregate},
@@ -260,13 +256,16 @@ class _TrendChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final dateFmt = DateFormat('dd.MM.');
+    final loc = Localizations.localeOf(context).languageCode;
+    final dateFmt = DateFormat.Md(loc);
 
     late List<FlSpot> loudness;
     late List<FlSpot> distress;
     late int len;
     late String Function(int index) labelAt;
+    late String title;
 
     if (aggregate == AggregateMode.perDay) {
       final days = _groupByDay(entries);
@@ -274,11 +273,13 @@ class _TrendChartCard extends StatelessWidget {
       loudness = [for (var i = 0; i < days.length; i++) FlSpot(i.toDouble(), days[i].loudness)];
       distress = [for (var i = 0; i < days.length; i++) FlSpot(i.toDouble(), days[i].distress)];
       labelAt = (i) => dateFmt.format(days[i].day);
+      title = t.tinnitusPerDayTitle(len);
     } else {
       len = entries.length;
       loudness = [for (var i = 0; i < entries.length; i++) FlSpot(i.toDouble(), entries[i].loudness.toDouble())];
       distress = [for (var i = 0; i < entries.length; i++) FlSpot(i.toDouble(), entries[i].distress.toDouble())];
       labelAt = (i) => dateFmt.format(entries[i].timestamp);
+      title = t.tinnitusPerEntryTitle(entries.length);
     }
 
     final tickInterval = (len / 5).clamp(1, double.infinity).toDouble();
@@ -289,12 +290,7 @@ class _TrendChartCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              aggregate == AggregateMode.perDay
-                  ? 'Tinnitus — Tagesdurchschnitt ($len Tage)'
-                  : 'Tinnitus — pro Eintrag (${entries.length})',
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(title, style: theme.textTheme.titleMedium),
             const SizedBox(height: 12),
             SizedBox(
               height: 260,
@@ -338,8 +334,8 @@ class _TrendChartCard extends StatelessWidget {
               spacing: 16,
               runSpacing: 8,
               children: [
-                _Legend(label: 'Lautstärke', color: theme.colorScheme.primary),
-                _Legend(label: 'Belastung', color: theme.colorScheme.error),
+                _Legend(label: t.loudness, color: theme.colorScheme.primary),
+                _Legend(label: t.distress, color: theme.colorScheme.error),
               ],
             ),
           ],
@@ -365,8 +361,10 @@ class _SleepChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final dateFmt = DateFormat('dd.MM.');
+    final loc = Localizations.localeOf(context).languageCode;
+    final dateFmt = DateFormat.Md(loc);
     final spots = [
       for (var i = 0; i < logs.length; i++)
         FlSpot(i.toDouble(), logs[i].quality.toDouble())
@@ -379,10 +377,7 @@ class _SleepChartCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Schlafqualität (${logs.length} Tage)',
-              style: theme.textTheme.titleMedium,
-            ),
+            Text(t.sleepChartTitle(logs.length), style: theme.textTheme.titleMedium),
             const SizedBox(height: 12),
             SizedBox(
               height: 220,
@@ -427,7 +422,7 @@ class _SleepChartCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            _Legend(label: 'Schlaf', color: theme.colorScheme.tertiary),
+            _Legend(label: t.sleep, color: theme.colorScheme.tertiary),
           ],
         ),
       ),
@@ -481,6 +476,7 @@ class _StatsTableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final loud = _MetricStats.from(entries.map((e) => e.loudness));
     final dist = _MetricStats.from(entries.map((e) => e.distress));
@@ -496,7 +492,7 @@ class _StatsTableCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Kennzahlen', style: theme.textTheme.titleMedium),
+            Text(t.statsTitle, style: theme.textTheme.titleMedium),
             const SizedBox(height: 12),
             Table(
               columnWidths: const {
@@ -509,17 +505,17 @@ class _StatsTableCard extends StatelessWidget {
               children: [
                 TableRow(
                   decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerHigh),
-                  children: const [
-                    _Cell('Metrik', header: true),
-                    _Cell('Min', header: true),
-                    _Cell('Mittel', header: true),
-                    _Cell('Median', header: true),
-                    _Cell('Max', header: true),
+                  children: [
+                    _Cell(t.colMetric, header: true),
+                    _Cell(t.colMin, header: true),
+                    _Cell(t.colMean, header: true),
+                    _Cell(t.colMedian, header: true),
+                    _Cell(t.colMax, header: true),
                   ],
                 ),
-                if (loud != null) _row('Lautstärke', loud),
-                if (dist != null) _row('Belastung', dist),
-                if (slp != null) _row('Schlaf', slp),
+                if (loud != null) _row(t.loudness, loud),
+                if (dist != null) _row(t.distress, dist),
+                if (slp != null) _row(t.sleep, slp),
               ],
             ),
           ],
@@ -560,12 +556,12 @@ class _Cell extends StatelessWidget {
 enum _ToD { morning, midday, afternoon, evening, night }
 
 extension on _ToD {
-  String get label => switch (this) {
-        _ToD.morning => 'Morgen',
-        _ToD.midday => 'Mittag',
-        _ToD.afternoon => 'Nachm.',
-        _ToD.evening => 'Abend',
-        _ToD.night => 'Nacht',
+  String labelFor(AppLocalizations t) => switch (this) {
+        _ToD.morning => t.todMorning,
+        _ToD.midday => t.todMidday,
+        _ToD.afternoon => t.todAfternoon,
+        _ToD.evening => t.todEvening,
+        _ToD.night => t.todNight,
       };
 
   String get range => switch (this) {
@@ -599,6 +595,7 @@ class _TimeOfDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final Map<_ToD, List<Entry>> grouped = {for (final t in _ToD.values) t: []};
     for (final e in entries) {
@@ -615,8 +612,8 @@ class _TimeOfDayCard extends StatelessWidget {
 
     final groups = <BarChartGroupData>[];
     for (var i = 0; i < _ToD.values.length; i++) {
-      final t = _ToD.values[i];
-      final s = stats[t]!;
+      final tod = _ToD.values[i];
+      final s = stats[tod]!;
       groups.add(
         BarChartGroupData(
           x: i,
@@ -637,10 +634,10 @@ class _TimeOfDayCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Tageszeit', style: theme.textTheme.titleMedium),
+            Text(t.timeOfDay, style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
-              'Durchschnitt pro Tagesabschnitt',
+              t.timeOfDaySubtitle,
               style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 12),
@@ -648,10 +645,7 @@ class _TimeOfDayCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Center(
-                  child: Text(
-                    'Keine Daten im Zeitraum.',
-                    style: theme.textTheme.bodyMedium,
-                  ),
+                  child: Text(t.noDataInPeriod, style: theme.textTheme.bodyMedium),
                 ),
               )
             else ...[
@@ -682,7 +676,7 @@ class _TimeOfDayCard extends StatelessWidget {
                             return Padding(
                               padding: const EdgeInsets.only(top: 6),
                               child: Text(
-                                _ToD.values[idx].label,
+                                _ToD.values[idx].labelFor(t),
                                 style: theme.textTheme.bodySmall,
                               ),
                             );
@@ -699,20 +693,20 @@ class _TimeOfDayCard extends StatelessWidget {
                 spacing: 16,
                 runSpacing: 8,
                 children: [
-                  _Legend(label: 'Lautstärke', color: theme.colorScheme.primary),
-                  _Legend(label: 'Belastung', color: theme.colorScheme.error),
+                  _Legend(label: t.loudness, color: theme.colorScheme.primary),
+                  _Legend(label: t.distress, color: theme.colorScheme.error),
                 ],
               ),
               const SizedBox(height: 12),
-              Text('Anzahl Einträge je Tageszeit', style: theme.textTheme.labelMedium),
+              Text(t.countPerTimeOfDay, style: theme.textTheme.labelMedium),
               const SizedBox(height: 6),
-              ..._ToD.values.map((t) {
-                final s = stats[t]!;
+              ..._ToD.values.map((tod) {
+                final s = stats[tod]!;
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Row(
                     children: [
-                      Expanded(flex: 3, child: Text('${t.label} (${t.range})')),
+                      Expanded(flex: 3, child: Text('${tod.labelFor(t)} (${tod.range})')),
                       Expanded(
                         flex: 1,
                         child: Text(

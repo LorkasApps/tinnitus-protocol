@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import '../widgets/scale_slider.dart';
 
@@ -50,6 +51,7 @@ class _SleepFormScreenState extends ConsumerState<SleepFormScreen> {
 
   Future<void> _save() async {
     final db = ref.read(dbProvider);
+    final t = AppLocalizations.of(context)!;
     final notes = _notesCtrl.text.trim();
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -61,23 +63,25 @@ class _SleepFormScreenState extends ConsumerState<SleepFormScreen> {
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Speichern fehlgeschlagen: $e')),
+        SnackBar(content: Text(t.saveFailed(e.toString()))),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final isEdit = widget.existing != null;
-    final dateFmt = DateFormat('EEEE, dd.MM.yyyy', 'de_DE');
+    final loc = Localizations.localeOf(context).languageCode;
+    final dateFmt = DateFormat.yMMMMEEEEd(loc);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Schlaf bearbeiten' : 'Schlaf eintragen'),
+        title: Text(isEdit ? t.editSleep : t.logSleep),
         actions: [
           IconButton(
             icon: const Icon(Icons.check),
-            tooltip: 'Speichern',
+            tooltip: t.save,
             onPressed: _save,
           ),
         ],
@@ -88,7 +92,7 @@ class _SleepFormScreenState extends ConsumerState<SleepFormScreen> {
           Card(
             child: ListTile(
               leading: const Icon(Icons.calendar_today),
-              title: const Text('Datum (Nacht vor)'),
+              title: Text(t.dateNightBefore),
               subtitle: Text(dateFmt.format(_date)),
               onTap: isEdit ? null : _pickDate,
               enabled: !isEdit,
@@ -96,32 +100,32 @@ class _SleepFormScreenState extends ConsumerState<SleepFormScreen> {
           ),
           const SizedBox(height: 16),
           ScaleSlider(
-            label: 'Schlafqualität',
+            label: t.sleepQuality,
             value: _quality,
             onChanged: (v) => setState(() => _quality = v),
-            minLabel: 'sehr schlecht',
-            maxLabel: 'sehr gut',
+            minLabel: t.sleepMin,
+            maxLabel: t.sleepMax,
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _notesCtrl,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Notizen (optional)',
-              hintText: 'Aufgewacht, Träume, Schlafdauer …',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: t.notesOptional,
+              hintText: t.notesSleepHint,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: _save,
             icon: const Icon(Icons.save),
-            label: Text(isEdit ? 'Aktualisieren' : 'Speichern'),
+            label: Text(isEdit ? t.update : t.save),
           ),
           if (!isEdit) ...[
             const SizedBox(height: 8),
             Text(
-              'Hinweis: existiert für diesen Tag bereits ein Eintrag, wird er überschrieben.',
+              t.sleepOverwriteHint,
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),

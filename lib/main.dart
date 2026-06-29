@@ -3,12 +3,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'l10n/app_localizations.dart';
 import 'screens/home_screen.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('de_DE', null);
+  await initializeDateFormatting();
   runApp(const ProviderScope(child: TinnitusApp()));
 }
 
@@ -18,17 +19,14 @@ class TinnitusApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tinnitus-Protokoll',
+      onGenerateTitle: (ctx) => AppLocalizations.of(ctx)!.appTitle,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: ThemeMode.system,
-      locale: const Locale('de'),
-      supportedLocales: const [Locale('de'), Locale('en')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      // No explicit locale → Flutter picks from system among supportedLocales.
+      // If system locale isn't in the list, falls back to first entry ('en').
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       debugShowCheckedModeBanner: false,
       home: const HomeScreen(),
     );

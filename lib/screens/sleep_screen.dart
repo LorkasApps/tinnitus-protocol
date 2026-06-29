@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/providers.dart';
 import 'sleep_form_screen.dart';
 
@@ -14,19 +15,20 @@ class SleepScreen extends ConsumerWidget {
     WidgetRef ref,
     SleepLog log,
   ) async {
+    final t = AppLocalizations.of(context)!;
     final yes = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Schlaf-Eintrag löschen?'),
-        content: const Text('Dieser Vorgang lässt sich nicht rückgängig machen.'),
+        title: Text(t.deleteSleepTitle),
+        content: Text(t.deleteConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Abbrechen'),
+            child: Text(t.cancel),
           ),
           FilledButton.tonal(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Löschen'),
+            child: Text(t.delete),
           ),
         ],
       ),
@@ -38,12 +40,14 @@ class SleepScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context)!;
     final logsAsync = ref.watch(sleepLogsStreamProvider);
-    final dateFmt = DateFormat('EEEE, dd.MM.yyyy', 'de_DE');
+    final loc = Localizations.localeOf(context).languageCode;
+    final dateFmt = DateFormat.yMMMMEEEEd(loc);
 
     return logsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text('Fehler: $e')),
+      error: (e, _) => Center(child: Text(t.errorPrefix(e.toString()))),
       data: (logs) {
         if (logs.isEmpty) {
           return Center(
@@ -59,14 +63,11 @@ class SleepScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Noch keine Schlaf-Einträge.',
+                    t.noSleepEntries,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Tippe auf "Schlaf eintragen", um den letzten Schlaf zu protokollieren.',
-                    textAlign: TextAlign.center,
-                  ),
+                  Text(t.noSleepEntriesHint, textAlign: TextAlign.center),
                 ],
               ),
             ),

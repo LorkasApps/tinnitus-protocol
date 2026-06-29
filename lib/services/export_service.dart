@@ -11,7 +11,7 @@ class ExportService {
   ExportService(this._db);
   final AppDatabase _db;
 
-  Future<void> exportCsv() async {
+  Future<void> exportCsv({required String subject}) async {
     final entries = await _db.getAllEntries();
     final sleep = await _db.getAllSleepLogs();
 
@@ -47,11 +47,11 @@ class ExportService {
         XFile(entriesFile.path, mimeType: 'text/csv'),
         XFile(sleepFile.path, mimeType: 'text/csv'),
       ],
-      subject: 'Tinnitus-Protokoll Export (CSV)',
+      subject: subject,
     );
   }
 
-  Future<void> exportJson() async {
+  Future<void> exportJson({required String subject}) async {
     final entries = await _db.getAllEntries();
     final sleep = await _db.getAllSleepLogs();
 
@@ -82,7 +82,7 @@ class ExportService {
 
     await Share.shareXFiles(
       [XFile(file.path, mimeType: 'application/json')],
-      subject: 'Tinnitus-Protokoll Export (JSON)',
+      subject: subject,
     );
   }
 

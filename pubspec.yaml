@@ -1,5 +1,5 @@
 name: tinnitus_protocol
-description: "Tinnitus-Protokoll: lokale App zum Tracken von Symptomen."
+description: "Tinnitus Protocol: local app for tracking symptoms."
 publish_to: 'none'
 version: 0.1.0+1
 
@@ -33,3 +33,4 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database.dart';
+import '../l10n/app_localizations.dart';
 
 class EntryTile extends StatelessWidget {
   const EntryTile({
@@ -18,7 +19,9 @@ class EntryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dateFmt = DateFormat('dd.MM.yyyy HH:mm', 'de_DE');
+    final t = AppLocalizations.of(context)!;
+    final loc = Localizations.localeOf(context).languageCode;
+    final dateFmt = DateFormat.yMd(loc).add_Hm();
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -40,9 +43,9 @@ class EntryTile extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  _Metric(label: 'Lautstärke', value: entry.loudness),
+                  _Metric(label: t.loudness, value: entry.loudness),
                   const SizedBox(width: 12),
-                  _Metric(label: 'Belastung', value: entry.distress),
+                  _Metric(label: t.distress, value: entry.distress),
                 ],
               ),
               if (entry.notes != null && entry.notes!.trim().isNotEmpty) ...[
