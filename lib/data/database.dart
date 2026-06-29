@@ -232,6 +232,17 @@ class AppDatabase extends _$AppDatabase {
           ..where((t) => t.id.equals(id) & t.customLabel.isNotNull()))
         .go();
   }
+
+  /// Wipes all user-generated data. Predefined triggers are retained so the
+  /// catalog of chips stays available after the reset.
+  Future<void> wipeAllUserData() async {
+    await transaction(() async {
+      await delete(entryTriggers).go();
+      await delete(entries).go();
+      await delete(sleepLogs).go();
+      await (delete(triggers)..where((t) => t.customLabel.isNotNull())).go();
+    });
+  }
 }
 
 QueryExecutor _openConnection() {

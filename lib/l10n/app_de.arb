@@ -158,5 +158,13 @@
 
   "supportAndMoreApps": "Support & weitere Apps",
   "supportAndMoreAppsSub": "Zu lorkasapps.github.io",
-  "linkOpenFailed": "Link konnte nicht geöffnet werden."
+  "linkOpenFailed": "Link konnte nicht geöffnet werden.",
+
+  "dangerZone": "Gefahrenzone",
+  "wipeAllData": "Alle Daten löschen",
+  "wipeAllDataSub": "Entfernt alle Einträge, Schlafprotokolle und eigenen Tags.",
+  "wipeConfirmTitle": "Alle Daten löschen?",
+  "wipeConfirmBody": "Damit werden sämtliche Einträge, Schlafprotokolle und eigenen Tags unwiderruflich gelöscht.",
+  "wipeConfirmCta": "Alles löschen",
+  "wipeSuccess": "Alle Daten gelöscht."
 }

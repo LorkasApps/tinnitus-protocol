@@ -165,5 +165,13 @@
 
   "supportAndMoreApps": "Support & more apps",
   "supportAndMoreAppsSub": "Visit lorkasapps.github.io",
-  "linkOpenFailed": "Could not open link."
+  "linkOpenFailed": "Could not open link.",
+
+  "dangerZone": "Danger zone",
+  "wipeAllData": "Delete all data",
+  "wipeAllDataSub": "Removes every entry, sleep log and custom tag.",
+  "wipeConfirmTitle": "Delete all data?",
+  "wipeConfirmBody": "This permanently erases all entries, sleep logs and custom tags. This cannot be undone.",
+  "wipeConfirmCta": "Delete everything",
+  "wipeSuccess": "All data deleted."
 }

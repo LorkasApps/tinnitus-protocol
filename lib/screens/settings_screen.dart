@@ -64,6 +64,36 @@ class SettingsScreen extends ConsumerWidget {
     };
   }
 
+  Future<void> _confirmWipe(BuildContext context, WidgetRef ref) async {
+    final t = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final theme = Theme.of(context);
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.wipeConfirmTitle),
+        content: Text(t.wipeConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: theme.colorScheme.error,
+              foregroundColor: theme.colorScheme.onError,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.wipeConfirmCta),
+          ),
+        ],
+      ),
+    );
+    if (yes != true) return;
+    await ref.read(dbProvider).wipeAllUserData();
+    messenger.showSnackBar(SnackBar(content: Text(t.wipeSuccess)));
+  }
+
   Future<void> _openSupport(BuildContext context) async {
     final t = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
@@ -157,6 +187,23 @@ class SettingsScreen extends ConsumerWidget {
           title: Text(t.importJson),
           subtitle: Text(t.importJsonSub),
           onTap: () => _import(context, ref),
+        ),
+        const Divider(),
+        ListTile(
+          title: Text(t.dangerZone),
+          dense: true,
+        ),
+        ListTile(
+          leading: Icon(
+            Icons.delete_forever,
+            color: Theme.of(context).colorScheme.error,
+          ),
+          title: Text(
+            t.wipeAllData,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+          subtitle: Text(t.wipeAllDataSub),
+          onTap: () => _confirmWipe(context, ref),
         ),
         const Divider(),
         ListTile(
