@@ -27,6 +27,10 @@ android/key.properties
 android/app/release/
 **/android/gradle-wrapper.jar
 
+# Keystores - NEVER commit
+*.jks
+*.keystore
+
 # iOS
 ios/Flutter/.last_build_id
 ios/Pods/
