@@ -44,8 +44,8 @@ class ExportService {
 
     await Share.shareXFiles(
       [
-        XFile(entriesFile.path, mimeType: 'text/csv'),
-        XFile(sleepFile.path, mimeType: 'text/csv'),
+        XFile(entriesFile.path, mimeType: 'text/csv', name: 'tinnitus_entries.csv'),
+        XFile(sleepFile.path, mimeType: 'text/csv', name: 'tinnitus_sleep.csv'),
       ],
       subject: subject,
     );
@@ -81,7 +81,7 @@ class ExportService {
     final file = await _writeTemp('tinnitus_export.json', json);
 
     await Share.shareXFiles(
-      [XFile(file.path, mimeType: 'application/json')],
+      [XFile(file.path, mimeType: 'application/json', name: 'tinnitus_export.json')],
       subject: subject,
     );
   }
