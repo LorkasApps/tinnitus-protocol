@@ -154,5 +154,9 @@
   "languageEnglish": "Englisch",
   "languageGerman": "Deutsch",
 
-  "aboutSubtitle": "Version 0.1.0 — Daten werden ausschließlich lokal gespeichert."
+  "aboutSubtitle": "Version 0.1.0 — Daten werden ausschließlich lokal gespeichert.",
+
+  "supportAndMoreApps": "Support & weitere Apps",
+  "supportAndMoreAppsSub": "Zu lorkasapps.github.io",
+  "linkOpenFailed": "Link konnte nicht geöffnet werden."
 }

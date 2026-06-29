@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 import '../providers/providers.dart';
 import '../services/export_service.dart';
 import '../services/import_service.dart';
+
+const _supportUrl = 'https://lorkasapps.github.io';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -59,6 +62,18 @@ class SettingsScreen extends ConsumerWidget {
       'de' => t.languageGerman,
       _ => locale.languageCode,
     };
+  }
+
+  Future<void> _openSupport(BuildContext context) async {
+    final t = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await launchUrl(
+      Uri.parse(_supportUrl),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!ok) {
+      messenger.showSnackBar(SnackBar(content: Text(t.linkOpenFailed)));
+    }
   }
 
   Future<void> _selectLanguage(BuildContext context, WidgetRef ref) async {
@@ -142,6 +157,14 @@ class SettingsScreen extends ConsumerWidget {
           title: Text(t.importJson),
           subtitle: Text(t.importJsonSub),
           onTap: () => _import(context, ref),
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.favorite_outline),
+          title: Text(t.supportAndMoreApps),
+          subtitle: Text(t.supportAndMoreAppsSub),
+          trailing: const Icon(Icons.open_in_new, size: 18),
+          onTap: () => _openSupport(context),
         ),
         const Divider(),
         ListTile(

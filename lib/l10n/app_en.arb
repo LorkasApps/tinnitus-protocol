@@ -161,5 +161,9 @@
   "languageEnglish": "English",
   "languageGerman": "German",
 
-  "aboutSubtitle": "Version 0.1.0 — Data is stored locally only."
+  "aboutSubtitle": "Version 0.1.0 — Data is stored locally only.",
+
+  "supportAndMoreApps": "Support & more apps",
+  "supportAndMoreAppsSub": "Visit lorkasapps.github.io",
+  "linkOpenFailed": "Could not open link."
 }
