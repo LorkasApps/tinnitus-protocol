@@ -35,14 +35,14 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(sleepLogs);
           }
           if (from < 3) {
-            // Alte NOT-NULL Spalte aus v1 entfernen (falls vorhanden).
-            // SQLite >= 3.35 unterstützt DROP COLUMN.
+            // Drop legacy NOT NULL column from v1 if still present.
+            // Requires SQLite >= 3.35 (supports ALTER TABLE ... DROP COLUMN).
             try {
               await customStatement(
                 'ALTER TABLE entries DROP COLUMN sleep_quality',
               );
             } catch (_) {
-              // Spalte gab es nicht (frische Installation) — ignorieren.
+              // Column didn't exist (fresh install) — ignore.
             }
           }
         },

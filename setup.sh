@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Bootstrap-Skript für Tinnitus-Protokoll Flutter-App.
-# Voraussetzung: Flutter SDK installiert (`brew install --cask flutter`).
+# Bootstrap script for the Tinnitus Protocol Flutter app.
+# Prerequisite: Flutter SDK installed (`brew install --cask flutter`).
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
 if ! command -v flutter >/dev/null 2>&1; then
-  echo "Fehler: 'flutter' nicht im PATH. Bitte installieren:"
+  echo "Error: 'flutter' is not in PATH. Install it with:"
   echo "  brew install --cask flutter"
   echo "  flutter doctor"
   exit 1
@@ -15,8 +15,8 @@ fi
 echo "==> flutter --version"
 flutter --version
 
-echo "==> Android-Plattform-Scaffold via 'flutter create' ergänzen"
-# Erzeugt android/ + ios/ + linux/... ohne existierende Files (pubspec, lib/) zu überschreiben.
+echo "==> Generating Android platform scaffold via 'flutter create'"
+# Adds android/ + ios/ + linux/... without overwriting existing files (pubspec, lib/).
 flutter create \
   --project-name tinnitus_protocol \
   --org de.kochniss \
@@ -26,7 +26,7 @@ flutter create \
 echo "==> flutter pub get"
 flutter pub get
 
-echo "==> Drift Code-Gen (build_runner)"
+echo "==> Drift code generation (build_runner)"
 dart run build_runner build --delete-conflicting-outputs
 
 echo "==> flutter analyze"
@@ -36,7 +36,7 @@ echo "==> flutter test"
 flutter test
 
 echo
-echo "Fertig. App bauen mit:"
+echo "Done. Build the app with:"
 echo "  flutter build apk --debug"
-echo "Oder auf Gerät/Emulator starten:"
+echo "Or run on a device/emulator:"
 echo "  flutter run"
