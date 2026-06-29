@@ -56,7 +56,7 @@ class _SleepFormScreenState extends ConsumerState<SleepFormScreen> {
       await db.upsertSleepLog(
         date: _date,
         quality: _quality,
-        notes: notes.isEmpty ? null : notes,
+        notes: notes,
       );
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
