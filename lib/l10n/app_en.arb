@@ -102,5 +102,12 @@
   "importUnsupported": "This JSON format is not supported.",
   "importSuccess": "Imported {entries} entries and {sleep} sleep logs.",
   "@importSuccess": {"placeholders": {"entries": {"type": "int"}, "sleep": {"type": "int"}}},
+
+  "appearance": "Appearance",
+  "language": "Language",
+  "languageSystem": "System default",
+  "languageEnglish": "English",
+  "languageGerman": "German",
+
   "aboutSubtitle": "Version 0.1.0 — Data is stored locally only."
 }

@@ -95,5 +95,12 @@
   "importJsonSub": "Aus einem früheren Export wiederherstellen",
   "importUnsupported": "Dieses JSON-Format wird nicht unterstützt.",
   "importSuccess": "{entries} Einträge und {sleep} Schlaf-Einträge importiert.",
+
+  "appearance": "Darstellung",
+  "language": "Sprache",
+  "languageSystem": "Systemstandard",
+  "languageEnglish": "Englisch",
+  "languageGerman": "Deutsch",
+
   "aboutSubtitle": "Version 0.1.0 — Daten werden ausschließlich lokal gespeichert."
 }
