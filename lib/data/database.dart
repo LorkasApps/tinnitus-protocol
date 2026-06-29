@@ -91,13 +91,30 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// Insert or replace sleep log for the given day (date is normalized to midnight).
+  ///
+  /// Drift's [insertOnConflictUpdate] resolves conflicts on the primary key
+  /// only, which never matches here because [id] is auto-incremented. We
+  /// dispatch on the UNIQUE(date) constraint manually so that editing an
+  /// existing day's log doesn't blow up with a UNIQUE-constraint violation.
   Future<int> upsertSleepLog({
     required DateTime date,
     required int quality,
     String? notes,
-  }) {
+  }) async {
     final d = DateTime(date.year, date.month, date.day);
-    return into(sleepLogs).insertOnConflictUpdate(
+    final existing = await (select(sleepLogs)
+          ..where((t) => t.date.equals(d)))
+        .getSingleOrNull();
+    if (existing == null) {
+      return into(sleepLogs).insert(
+        SleepLogsCompanion(
+          date: Value(d),
+          quality: Value(quality),
+          notes: Value(notes),
+        ),
+      );
+    }
+    return (update(sleepLogs)..where((t) => t.id.equals(existing.id))).write(
       SleepLogsCompanion(
         date: Value(d),
         quality: Value(quality),
