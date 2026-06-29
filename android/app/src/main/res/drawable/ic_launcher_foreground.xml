@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Notebook cover (rounded white rect) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M33,24 L75,24 A4,4 0 0 1 79,28 L79,80 A4,4 0 0 1 75,84 L33,84 A4,4 0 0 1 29,80 L29,28 A4,4 0 0 1 33,24 Z" />
+    <!-- Spine line -->
+    <path
+        android:fillColor="#00897B"
+        android:pathData="M35,28 L37,28 L37,80 L35,80 Z" />
+    <!-- Page lines (representing journal entries) -->
+    <path
+        android:fillColor="#00897B"
+        android:pathData="M41,38 L72,38 L72,41 L41,41 Z" />
+    <path
+        android:fillColor="#00897B"
+        android:pathData="M41,48 L72,48 L72,51 L41,51 Z" />
+    <path
+        android:fillColor="#00897B"
+        android:pathData="M41,58 L72,58 L72,61 L41,61 Z" />
+    <path
+        android:fillColor="#00897B"
+        android:pathData="M41,68 L65,68 L65,71 L41,71 Z" />
+</vector>
