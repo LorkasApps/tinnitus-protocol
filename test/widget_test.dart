@@ -15,16 +15,15 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [dbProvider.overrideWithValue(db)],
-        child: MaterialApp(
-          locale: const Locale('en'),
+        child: const MaterialApp(
+          locale: Locale('en'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const HomeScreen(),
+          home: HomeScreen(),
         ),
       ),
     );
     await tester.pumpAndSettle();
-
     expect(find.text('Entries'), findsWidgets);
     expect(find.text('No entries yet.'), findsOneWidget);
     expect(find.text('New entry'), findsOneWidget);
@@ -38,11 +37,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [dbProvider.overrideWithValue(db)],
-        child: MaterialApp(
-          locale: const Locale('de'),
+        child: const MaterialApp(
+          locale: Locale('de'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const HomeScreen(),
+          home: HomeScreen(),
         ),
       ),
     );
