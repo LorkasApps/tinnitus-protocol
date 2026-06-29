@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "de.kochniss.tinnitus_protocol"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
