@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#00897B"/>
+  <!-- Notebook cover (rounded white rect) -->
+  <rect x="120" y="80" width="272" height="352" rx="24" ry="24" fill="#FFFFFF"/>
+  <!-- Spine -->
+  <rect x="152" y="112" width="14" height="288" fill="#00897B"/>
+  <!-- Page lines -->
+  <rect x="188" y="152" width="176" height="18" fill="#00897B"/>
+  <rect x="188" y="212" width="176" height="18" fill="#00897B"/>
+  <rect x="188" y="272" width="176" height="18" fill="#00897B"/>
+  <rect x="188" y="332" width="136" height="18" fill="#00897B"/>
+</svg>

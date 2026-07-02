@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <!-- Background -->
+  <rect width="1024" height="500" fill="#00897B"/>
+
+  <!-- Notebook icon on left -->
+  <g transform="translate(80, 90)">
+    <rect x="0" y="0" width="240" height="320" rx="22" ry="22" fill="#FFFFFF"/>
+    <rect x="28" y="28" width="12" height="264" fill="#00897B"/>
+    <rect x="60" y="64" width="152" height="16" fill="#00897B"/>
+    <rect x="60" y="118" width="152" height="16" fill="#00897B"/>
+    <rect x="60" y="172" width="152" height="16" fill="#00897B"/>
+    <rect x="60" y="226" width="112" height="16" fill="#00897B"/>
+  </g>
+
+  <!-- App name -->
+  <text x="400" y="240" font-family="Helvetica, Arial, sans-serif" font-size="72" font-weight="700" fill="#FFFFFF">
+    Tinnitus Protocol
+  </text>
+  <text x="400" y="300" font-family="Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#FFFFFF" opacity="0.9">
+    Track. Reflect. Understand.
+  </text>
+</svg>
