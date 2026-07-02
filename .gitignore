@@ -31,6 +31,10 @@ android/app/release/
 *.jks
 *.keystore
 
+# Generated test data
+testdata.json
+scripts/testdata.json
+
 # iOS
 ios/Flutter/.last_build_id
 ios/Pods/
