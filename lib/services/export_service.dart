@@ -39,13 +39,16 @@ class ExportService {
 
     final entryCsv = const ListToCsvConverter().convert(entryRows);
     final sleepCsv = const ListToCsvConverter().convert(sleepRows);
-    final entriesFile = await _writeTemp('tinnitus_entries.csv', entryCsv);
-    final sleepFile = await _writeTemp('tinnitus_sleep.csv', sleepCsv);
+    final stamp = _todayStamp();
+    final entriesName = 'tinnitus_entries_$stamp.csv';
+    final sleepName = 'tinnitus_sleep_$stamp.csv';
+    final entriesFile = await _writeTemp(entriesName, entryCsv);
+    final sleepFile = await _writeTemp(sleepName, sleepCsv);
 
     await Share.shareXFiles(
       [
-        XFile(entriesFile.path, mimeType: 'text/csv', name: 'tinnitus_entries.csv'),
-        XFile(sleepFile.path, mimeType: 'text/csv', name: 'tinnitus_sleep.csv'),
+        XFile(entriesFile.path, mimeType: 'text/csv', name: entriesName),
+        XFile(sleepFile.path, mimeType: 'text/csv', name: sleepName),
       ],
       subject: subject,
     );
@@ -86,12 +89,21 @@ class ExportService {
     };
 
     final json = const JsonEncoder.withIndent('  ').convert(payload);
-    final file = await _writeTemp('tinnitus_export.json', json);
+    final filename = 'tinnitus_export_${_todayStamp()}.json';
+    final file = await _writeTemp(filename, json);
 
     await Share.shareXFiles(
-      [XFile(file.path, mimeType: 'application/json', name: 'tinnitus_export.json')],
+      [XFile(file.path, mimeType: 'application/json', name: filename)],
       subject: subject,
     );
+  }
+
+  String _todayStamp() {
+    final now = DateTime.now();
+    final y = now.year.toString().padLeft(4, '0');
+    final m = now.month.toString().padLeft(2, '0');
+    final d = now.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
   }
 
   Future<File> _writeTemp(String name, String contents) async {
