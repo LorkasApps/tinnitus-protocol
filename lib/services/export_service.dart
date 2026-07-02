@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:csv/csv.dart';
+import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -11,9 +12,9 @@ class ExportService {
   ExportService(this._db);
   final AppDatabase _db;
 
-  Future<void> exportCsv({required String subject}) async {
-    final entries = await _db.getAllEntries();
-    final sleep = await _db.getAllSleepLogs();
+  Future<void> exportCsv({required String subject, DateTimeRange? range}) async {
+    final entries = _filterEntries(await _db.getAllEntries(), range);
+    final sleep = _filterSleep(await _db.getAllSleepLogs(), range);
 
     final entryRows = <List<dynamic>>[
       ['id', 'timestamp', 'loudness', 'distress', 'notes'],
@@ -39,9 +40,9 @@ class ExportService {
 
     final entryCsv = const ListToCsvConverter().convert(entryRows);
     final sleepCsv = const ListToCsvConverter().convert(sleepRows);
-    final stamp = _todayStamp();
-    final entriesName = 'tinnitus_entries_$stamp.csv';
-    final sleepName = 'tinnitus_sleep_$stamp.csv';
+    final suffix = _filenameSuffix(range);
+    final entriesName = 'tinnitus_entries_$suffix.csv';
+    final sleepName = 'tinnitus_sleep_$suffix.csv';
     final entriesFile = await _writeTemp(entriesName, entryCsv);
     final sleepFile = await _writeTemp(sleepName, sleepCsv);
 
@@ -54,9 +55,9 @@ class ExportService {
     );
   }
 
-  Future<void> exportJson({required String subject}) async {
-    final entries = await _db.getAllEntries();
-    final sleep = await _db.getAllSleepLogs();
+  Future<void> exportJson({required String subject, DateTimeRange? range}) async {
+    final entries = _filterEntries(await _db.getAllEntries(), range);
+    final sleep = _filterSleep(await _db.getAllSleepLogs(), range);
 
     final triggersByEntry = <int, List<String>>{};
     for (final e in entries) {
@@ -89,7 +90,7 @@ class ExportService {
     };
 
     final json = const JsonEncoder.withIndent('  ').convert(payload);
-    final filename = 'tinnitus_export_${_todayStamp()}.json';
+    final filename = 'tinnitus_export_${_filenameSuffix(range)}.json';
     final file = await _writeTemp(filename, json);
 
     await Share.shareXFiles(
@@ -98,12 +99,38 @@ class ExportService {
     );
   }
 
-  String _todayStamp() {
-    final now = DateTime.now();
-    final y = now.year.toString().padLeft(4, '0');
-    final m = now.month.toString().padLeft(2, '0');
-    final d = now.day.toString().padLeft(2, '0');
-    return '$y-$m-$d';
+  List<Entry> _filterEntries(List<Entry> all, DateTimeRange? range) {
+    if (range == null) return all;
+    final start = _startOfDay(range.start);
+    final end = _endOfDay(range.end);
+    return all
+        .where((e) => !e.timestamp.isBefore(start) && !e.timestamp.isAfter(end))
+        .toList();
+  }
+
+  List<SleepLog> _filterSleep(List<SleepLog> all, DateTimeRange? range) {
+    if (range == null) return all;
+    final start = _startOfDay(range.start);
+    final end = _endOfDay(range.end);
+    return all
+        .where((s) => !s.date.isBefore(start) && !s.date.isAfter(end))
+        .toList();
+  }
+
+  String _filenameSuffix(DateTimeRange? range) {
+    if (range == null) return '${_stamp(DateTime.now())}_complete';
+    return '${_stamp(range.start)}_${_stamp(range.end)}';
+  }
+
+  DateTime _startOfDay(DateTime d) => DateTime(d.year, d.month, d.day);
+  DateTime _endOfDay(DateTime d) =>
+      DateTime(d.year, d.month, d.day, 23, 59, 59, 999);
+
+  String _stamp(DateTime d) {
+    final y = d.year.toString().padLeft(4, '0');
+    final m = d.month.toString().padLeft(2, '0');
+    final day = d.day.toString().padLeft(2, '0');
+    return '$y-$m-$day';
   }
 
   Future<File> _writeTemp(String name, String contents) async {

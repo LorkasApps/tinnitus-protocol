@@ -10,25 +10,72 @@ import '../services/import_service.dart';
 
 const _supportUrl = 'https://lorkasapps.github.io';
 
+enum _ExportScope { all, range }
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   Future<void> _export(BuildContext context, WidgetRef ref, bool asCsv) async {
     final t = AppLocalizations.of(context)!;
-    final db = ref.read(dbProvider);
-    final svc = ExportService(db);
     final messenger = ScaffoldMessenger.of(context);
+
+    final scope = await _pickExportScope(context);
+    if (scope == null) return; // cancelled
+    DateTimeRange? range;
+    if (scope == _ExportScope.range) {
+      range = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime(2020),
+        lastDate: DateTime.now(),
+      );
+      if (range == null) return; // cancelled range picker
+    }
+
+    final svc = ExportService(ref.read(dbProvider));
     try {
       if (asCsv) {
-        await svc.exportCsv(subject: t.exportSubjectCsv);
+        await svc.exportCsv(subject: t.exportSubjectCsv, range: range);
       } else {
-        await svc.exportJson(subject: t.exportSubjectJson);
+        await svc.exportJson(subject: t.exportSubjectJson, range: range);
       }
     } catch (e) {
       messenger.showSnackBar(
         SnackBar(content: Text(t.exportFailed(e.toString()))),
       );
     }
+  }
+
+  Future<_ExportScope?> _pickExportScope(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    return showModalBottomSheet<_ExportScope>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text(
+                t.exportScopeTitle,
+                style: Theme.of(ctx).textTheme.titleMedium,
+              ),
+              dense: true,
+            ),
+            ListTile(
+              leading: const Icon(Icons.all_inclusive),
+              title: Text(t.exportAllData),
+              onTap: () => Navigator.pop(ctx, _ExportScope.all),
+            ),
+            ListTile(
+              leading: const Icon(Icons.date_range),
+              title: Text(t.exportPickRange),
+              onTap: () => Navigator.pop(ctx, _ExportScope.range),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _import(BuildContext context, WidgetRef ref) async {

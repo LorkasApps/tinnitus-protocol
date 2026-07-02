@@ -163,6 +163,10 @@
 
   "aboutSubtitle": "Version 0.1.0 — Data is stored locally only.",
 
+  "exportScopeTitle": "What do you want to export?",
+  "exportAllData": "All data",
+  "exportPickRange": "Pick a date range",
+
   "supportAndMoreApps": "Support & more apps",
   "supportAndMoreAppsSub": "Visit lorkasapps.github.io",
   "linkOpenFailed": "Could not open link.",

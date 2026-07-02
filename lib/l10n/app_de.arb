@@ -156,6 +156,10 @@
 
   "aboutSubtitle": "Version 0.1.0 — Daten werden ausschließlich lokal gespeichert.",
 
+  "exportScopeTitle": "Was möchtest du exportieren?",
+  "exportAllData": "Alle Daten",
+  "exportPickRange": "Zeitraum wählen",
+
   "supportAndMoreApps": "Support & weitere Apps",
   "supportAndMoreAppsSub": "Zu lorkasapps.github.io",
   "linkOpenFailed": "Link konnte nicht geöffnet werden.",
