@@ -91,8 +91,13 @@ class _AnalyzeScreenState extends ConsumerState<AnalyzeScreen> {
 List<Entry> _filterEntries(List<Entry> all, TimePeriod period) {
   final dur = period.duration;
   if (dur == null) return all;
-  final cutoff = DateTime.now().subtract(dur);
-  return all.where((e) => e.timestamp.isAfter(cutoff)).toList();
+  if (all.isEmpty) return all;
+  final latest = all
+      .map((e) => e.timestamp)
+      .reduce((a, b) => a.isAfter(b) ? a : b);
+  final anchorDay = DateTime(latest.year, latest.month, latest.day);
+  final cutoff = anchorDay.subtract(Duration(days: dur.inDays - 1));
+  return all.where((e) => !e.timestamp.isBefore(cutoff)).toList();
 }
 
 double _avg(Iterable<num> values) {

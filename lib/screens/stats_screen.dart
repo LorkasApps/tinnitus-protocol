@@ -61,8 +61,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
       return const _Empty();
     }
 
-    final entries = _filterByPeriod(allEntries, _period, (e) => e.timestamp);
-    final sleep = _filterByPeriod(allSleep, _period, (s) => s.date);
+    final cutoff = _cutoffFor(_period, allEntries, allSleep);
+    final entries = _filterByCutoff(allEntries, cutoff, (e) => e.timestamp);
+    final sleep = _filterByCutoff(allSleep, cutoff, (s) => s.date);
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -94,16 +95,33 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
   }
 }
 
-List<T> _filterByPeriod<T>(
-  List<T> all,
+DateTime? _cutoffFor(
   TimePeriod period,
-  DateTime Function(T) ts,
+  List<Entry> entries,
+  List<SleepLog> sleep,
 ) {
   final dur = period.duration;
+  if (dur == null) return null;
+  DateTime? anchor;
+  for (final e in entries) {
+    if (anchor == null || e.timestamp.isAfter(anchor)) anchor = e.timestamp;
+  }
+  for (final s in sleep) {
+    if (anchor == null || s.date.isAfter(anchor)) anchor = s.date;
+  }
+  anchor ??= DateTime.now();
+  final anchorDay = DateTime(anchor.year, anchor.month, anchor.day);
+  return anchorDay.subtract(Duration(days: dur.inDays - 1));
+}
+
+List<T> _filterByCutoff<T>(
+  List<T> all,
+  DateTime? cutoff,
+  DateTime Function(T) ts,
+) {
   final list = [...all];
-  if (dur != null) {
-    final cutoff = DateTime.now().subtract(dur);
-    list.removeWhere((e) => !ts(e).isAfter(cutoff));
+  if (cutoff != null) {
+    list.removeWhere((e) => ts(e).isBefore(cutoff));
   }
   list.sort((a, b) => ts(a).compareTo(ts(b)));
   return list;
