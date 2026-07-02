@@ -51,8 +51,14 @@ class ImportService {
     final sleep = _parseSleep(root['sleep']);
 
     await _db.transaction(() async {
-      for (final c in entries) {
-        await _db.insertEntry(c);
+      for (final e in entries) {
+        final id = await _db.insertEntry(e.companion);
+        if (e.triggerKeys.isEmpty) continue;
+        final triggerIds = <int>{};
+        for (final key in e.triggerKeys) {
+          triggerIds.add(await _db.findOrCreateTriggerByKey(key));
+        }
+        await _db.setTriggersForEntry(id, triggerIds);
       }
       for (final s in sleep) {
         await _db.upsertSleepLog(
@@ -79,25 +85,37 @@ class ImportService {
     return raw.cast<String, dynamic>();
   }
 
-  List<EntriesCompanion> _parseEntries(List raw) {
-    final result = <EntriesCompanion>[];
+  List<_ParsedEntry> _parseEntries(List raw) {
+    final result = <_ParsedEntry>[];
     for (final e in raw) {
       if (e is! Map) throw const ImportFormatException();
       final ts = e['timestamp'];
       final loudness = e['loudness'];
       final distress = e['distress'];
       final notes = e['notes'];
+      final rawKeys = e['triggerKeys'];
       if (ts is! String) throw const ImportFormatException();
       if (loudness is! int) throw const ImportFormatException();
       if (distress is! int) throw const ImportFormatException();
       if (notes != null && notes is! String) throw const ImportFormatException();
       final dt = DateTime.tryParse(ts);
       if (dt == null) throw const ImportFormatException();
-      result.add(EntriesCompanion(
-        timestamp: Value(dt),
-        loudness: Value(loudness),
-        distress: Value(distress),
-        notes: Value(notes as String?),
+      final keys = <String>[];
+      if (rawKeys != null) {
+        if (rawKeys is! List) throw const ImportFormatException();
+        for (final k in rawKeys) {
+          if (k is! String || k.isEmpty) throw const ImportFormatException();
+          keys.add(k);
+        }
+      }
+      result.add(_ParsedEntry(
+        companion: EntriesCompanion(
+          timestamp: Value(dt),
+          loudness: Value(loudness),
+          distress: Value(distress),
+          notes: Value(notes as String?),
+        ),
+        triggerKeys: keys,
       ));
     }
     return result;
@@ -123,6 +141,12 @@ class ImportService {
     }
     return result;
   }
+}
+
+class _ParsedEntry {
+  _ParsedEntry({required this.companion, required this.triggerKeys});
+  final EntriesCompanion companion;
+  final List<String> triggerKeys;
 }
 
 class _ParsedSleep {

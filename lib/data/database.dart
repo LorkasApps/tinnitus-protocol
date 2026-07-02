@@ -226,6 +226,22 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  /// Returns the id of the trigger matching [key], inserting a new row if
+  /// none exists. Used by import to keep foreign references valid without
+  /// silently dropping tags the exporting app knew about.
+  Future<int> findOrCreateTriggerByKey(String key) async {
+    final existing = await (select(triggers)..where((t) => t.key.equals(key)))
+        .getSingleOrNull();
+    if (existing != null) return existing.id;
+    final customLabel = key.startsWith('custom:') ? key.substring(7) : null;
+    return into(triggers).insert(
+      TriggersCompanion.insert(
+        key: key,
+        customLabel: Value(customLabel),
+      ),
+    );
+  }
+
   /// Deletes a custom trigger. Predefined triggers (customLabel == null) protected.
   Future<int> deleteCustomTrigger(int id) {
     return (delete(triggers)

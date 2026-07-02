@@ -55,6 +55,13 @@ class ExportService {
     final entries = await _db.getAllEntries();
     final sleep = await _db.getAllSleepLogs();
 
+    final triggersByEntry = <int, List<String>>{};
+    for (final e in entries) {
+      final tags = await _db.getTriggersForEntry(e.id);
+      if (tags.isEmpty) continue;
+      triggersByEntry[e.id] = [for (final t in tags) t.key];
+    }
+
     final payload = {
       'entries': [
         for (final e in entries)
@@ -64,6 +71,7 @@ class ExportService {
             'loudness': e.loudness,
             'distress': e.distress,
             'notes': e.notes,
+            'triggerKeys': triggersByEntry[e.id] ?? const <String>[],
           }
       ],
       'sleep': [
