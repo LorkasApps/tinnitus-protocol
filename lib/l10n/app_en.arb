@@ -163,6 +163,9 @@
 
   "aboutSubtitle": "Version 0.1.0 — Data is stored locally only.",
 
+  "loadNextEntries": "Load next {count}",
+  "@loadNextEntries": { "placeholders": { "count": { "type": "int" } } },
+
   "exportScopeTitle": "What do you want to export?",
   "exportAllData": "All data",
   "exportPickRange": "Pick a date range",

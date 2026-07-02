@@ -156,6 +156,9 @@
 
   "aboutSubtitle": "Version 0.1.0 — Daten werden ausschließlich lokal gespeichert.",
 
+  "loadNextEntries": "Nächste {count} laden",
+  "@loadNextEntries": { "placeholders": { "count": { "type": "int" } } },
+
   "exportScopeTitle": "Was möchtest du exportieren?",
   "exportAllData": "Alle Daten",
   "exportPickRange": "Zeitraum wählen",

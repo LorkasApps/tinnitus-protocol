@@ -93,8 +93,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _EntriesTab extends ConsumerWidget {
+const _entriesPageSize = 20;
+
+class _EntriesTab extends ConsumerStatefulWidget {
   const _EntriesTab();
+
+  @override
+  ConsumerState<_EntriesTab> createState() => _EntriesTabState();
+}
+
+class _EntriesTabState extends ConsumerState<_EntriesTab> {
+  int _visibleCount = _entriesPageSize;
 
   Future<void> _confirmDelete(
     BuildContext context,
@@ -125,7 +134,7 @@ class _EntriesTab extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final entriesAsync = ref.watch(entriesStreamProvider);
     final triggers = ref.watch(triggersStreamProvider).value ?? const [];
@@ -167,10 +176,30 @@ class _EntriesTab extends ConsumerWidget {
             ),
           );
         }
+        final visible = _visibleCount.clamp(0, entries.length);
+        final hasMore = visible < entries.length;
+        final remaining = entries.length - visible;
+        final nextBatch =
+            remaining < _entriesPageSize ? remaining : _entriesPageSize;
+
         return ListView.builder(
           padding: const EdgeInsets.only(top: 8, bottom: 96),
-          itemCount: entries.length,
+          itemCount: visible + (hasMore ? 1 : 0),
           itemBuilder: (context, i) {
+            if (i == visible) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 12),
+                child: OutlinedButton.icon(
+                  onPressed: () => setState(() {
+                    _visibleCount = (_visibleCount + _entriesPageSize)
+                        .clamp(0, entries.length);
+                  }),
+                  icon: const Icon(Icons.expand_more),
+                  label: Text(t.loadNextEntries(nextBatch)),
+                ),
+              );
+            }
             final entry = entries[i];
             return EntryTile(
               entry: entry,
