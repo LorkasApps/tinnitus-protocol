@@ -249,6 +249,39 @@ double _avg(Iterable<int> v) {
   return v.reduce((a, b) => a + b) / v.length;
 }
 
+LineTouchData _lineTooltip(ThemeData theme) {
+  return LineTouchData(
+    touchTooltipData: LineTouchTooltipData(
+      getTooltipColor: (_) => theme.colorScheme.inverseSurface,
+      getTooltipItems: (spots) => [
+        for (final s in spots)
+          LineTooltipItem(
+            s.y.toStringAsFixed(1),
+            TextStyle(
+              color: theme.colorScheme.onInverseSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+BarTouchData _barTooltip(ThemeData theme) {
+  return BarTouchData(
+    touchTooltipData: BarTouchTooltipData(
+      getTooltipColor: (_) => theme.colorScheme.inverseSurface,
+      getTooltipItem: (group, groupIdx, rod, rodIdx) => BarTooltipItem(
+        rod.toY.toStringAsFixed(1),
+        TextStyle(
+          color: theme.colorScheme.onInverseSurface,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+  );
+}
+
 class _TrendChartCard extends StatelessWidget {
   const _TrendChartCard({required this.entries, required this.aggregate});
   final List<Entry> entries;
@@ -322,6 +355,7 @@ class _TrendChartCard extends StatelessWidget {
                     ),
                   ),
                   borderData: FlBorderData(show: true),
+                  lineTouchData: _lineTooltip(theme),
                   lineBarsData: [
                     _line(loudness, theme.colorScheme.primary),
                     _line(distress, theme.colorScheme.error),
@@ -409,6 +443,7 @@ class _SleepChartCard extends StatelessWidget {
                     ),
                   ),
                   borderData: FlBorderData(show: true),
+                  lineTouchData: _lineTooltip(theme),
                   lineBarsData: [
                     LineChartBarData(
                       spots: spots,
@@ -492,7 +527,10 @@ class _StatsTableCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(t.statsTitle, style: theme.textTheme.titleMedium),
+            Text(
+              '${t.statsTitle} · ${t.sampleCount(entries.length + sleep.length)}',
+              style: theme.textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
             Table(
               columnWidths: const {
@@ -634,7 +672,10 @@ class _TimeOfDayCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(t.timeOfDay, style: theme.textTheme.titleMedium),
+            Text(
+              '${t.timeOfDay} · ${t.sampleCount(entries.length)}',
+              style: theme.textTheme.titleMedium,
+            ),
             const SizedBox(height: 4),
             Text(
               t.timeOfDaySubtitle,
@@ -658,6 +699,7 @@ class _TimeOfDayCard extends StatelessWidget {
                     maxY: 10,
                     gridData: const FlGridData(show: true, drawVerticalLine: false),
                     borderData: FlBorderData(show: false),
+                    barTouchData: _barTooltip(theme),
                     titlesData: FlTitlesData(
                       leftTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: true, interval: 2, reservedSize: 28),
