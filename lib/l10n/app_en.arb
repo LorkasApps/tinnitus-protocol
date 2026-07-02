@@ -161,7 +161,7 @@
   "languageEnglish": "English",
   "languageGerman": "German",
 
-  "aboutSubtitle": "Version 0.1.0 — Data is stored locally only.",
+  "aboutSubtitle": "Version 1.0.0 — Data is stored locally only.",
 
   "loadNextEntries": "Load next {count}",
   "@loadNextEntries": { "placeholders": { "count": { "type": "int" } } },
