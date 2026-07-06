@@ -166,6 +166,17 @@
   "loadNextEntries": "Load next {count}",
   "@loadNextEntries": { "placeholders": { "count": { "type": "int" } } },
 
+  "addFilter": "Filter",
+  "filterSheetTitle": "Filter entries",
+  "filterSheetDone": "Done",
+  "filterByDateRange": "Date range",
+  "filterByTags": "Tags",
+  "filterPickDate": "Pick a date range",
+  "filterResetAll": "Clear filters",
+  "filteredEmptyTitle": "No matches",
+  "filteredEmptyHint": "No entries match the current filter.",
+  "filteredEmptyReset": "Reset filters",
+
   "exportScopeTitle": "What do you want to export?",
   "exportAllData": "All data",
   "exportPickRange": "Pick a date range",

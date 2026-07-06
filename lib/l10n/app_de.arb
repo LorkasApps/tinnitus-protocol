@@ -159,6 +159,17 @@
   "loadNextEntries": "Nächste {count} laden",
   "@loadNextEntries": { "placeholders": { "count": { "type": "int" } } },
 
+  "addFilter": "Filter",
+  "filterSheetTitle": "Einträge filtern",
+  "filterSheetDone": "Fertig",
+  "filterByDateRange": "Zeitraum",
+  "filterByTags": "Tags",
+  "filterPickDate": "Zeitraum wählen",
+  "filterResetAll": "Filter aufheben",
+  "filteredEmptyTitle": "Keine Treffer",
+  "filteredEmptyHint": "Keine Einträge passen zum aktuellen Filter.",
+  "filteredEmptyReset": "Filter zurücksetzen",
+
   "exportScopeTitle": "Was möchtest du exportieren?",
   "exportAllData": "Alle Daten",
   "exportPickRange": "Zeitraum wählen",
