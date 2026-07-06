@@ -36,7 +36,7 @@ class StatsScreen extends ConsumerStatefulWidget {
 
 class _StatsScreenState extends ConsumerState<StatsScreen> {
   TimePeriod _period = TimePeriod.d30;
-  AggregateMode _aggregate = AggregateMode.perEntry;
+  AggregateMode _aggregate = AggregateMode.perDay;
 
   @override
   Widget build(BuildContext context) {
